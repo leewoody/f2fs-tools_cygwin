@@ -1,7 +1,7 @@
 override CC = clang
 override CXX = clang++
 
-INCLUDES = -Iinclude
+INCLUDES = -Iinclude -I/opt/homebrew/include
 
 LIBSELINUX_SRC = \
     src/booleans.c \

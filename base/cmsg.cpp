@@ -20,11 +20,16 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <unistd.h>
 //#include <sys/user.h>
 
 #include <memory>
 
 #include <android-base/logging.h>
+
+#ifndef PAGE_SIZE
+#define PAGE_SIZE getpagesize()
+#endif
 
 namespace android {
 namespace base {

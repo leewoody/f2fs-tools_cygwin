@@ -3,8 +3,8 @@
 
 CC = clang
 CXX = clang++
-STRIP = llvm-strip
-AR = llvm-ar
+STRIP = strip
+AR = ar
 
 RM = rm -rf
 
@@ -27,7 +27,8 @@ CFLAGS = \
         -Wno-macro-redefined \
         -Wno-missing-field-initializers \
         -Wno-pointer-arith \
-        -Wno-sign-compare
+        -Wno-sign-compare \
+        -Wno-unused-label
 
 ifeq ($(shell uname -o), Cygwin)
 CFLAGS += -D_WIN32 \
@@ -50,8 +51,13 @@ ifeq ($(shell uname -o), Cygwin)
 INCLUDES += -include /usr/include/limits.h
 endif
 
+ifeq ($(shell uname -o), Cygwin)
 LDFLAGS = -lstdc++ -static
 STRIPFLAGS = --strip-all
+else
+LDFLAGS = -lstdc++ -lpcre
+STRIPFLAGS = -S
+endif
 
 LIBF2FS_SRC = \
         lib/libf2fs.c \
@@ -99,16 +105,14 @@ ZLIB_CFLAGS = \
         -DZLIB_CONST \
         -O3 \
         -Wall \
-        -Werror \
+        -Wno-error \
         -Wno-unused \
-        -Wno-unused-parameter
+        -Wno-unused-parameter \
+        -Wno-macro-redefined \
+        -Wno-deprecated-non-prototype
 ZLIB_SRC = zlib/adler32.c \
-        zlib/adler32_simd.c \
         zlib/compress.c \
-        zlib/cpu_features.c \
         zlib/crc32.c \
-        zlib/crc32_simd.c \
-        zlib/crc_folding.c \
         zlib/deflate.c \
         zlib/gzclose.c \
         zlib/gzlib.c \
@@ -155,7 +159,7 @@ obj/fsckf2fs/%.o: %.c
 obj/zlib/%.o: %.c
 	@mkdir -p `dirname $@`
 	@echo -e "\033[96m\tCC\t$@\033[0m"
-	@$(CC) $(ZLIB_CFLAGS) -Izlib -c $< -o $@
+	@$(CC) $(ZLIB_CFLAGS) -Izlib -include unistd.h -Ufdopen -c $< -o $@
 
 e2fsprog/.lib/libext2_uuid.a:
 	@$(MAKE) -C e2fsprog

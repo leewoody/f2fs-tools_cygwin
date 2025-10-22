@@ -1,0 +1,121 @@
+@startuml fsck.f2fs流程图
+!define RECTANGLE class
+title fsck.f2fs 工具流程图
+
+start
+:解析命令行参数;
+note right: f2fs_parse_options()
+
+:检查设备挂载状态;
+if (设备已挂载?) then (是)
+  if (只读模式?) then (否)
+    :退出并报错;
+    stop
+  endif
+endif
+
+:获取设备信息;
+note right: f2fs_get_device_info()
+
+:获取F2FS文件系统信息;
+note right: f2fs_get_f2fs_info()
+
+:挂载文件系统;
+note right: f2fs_do_mount()
+
+:根据功能分发;
+switch (c.func)
+case (FSCK)
+  :执行文件系统检查;
+  note right: do_fsck()
+  
+  :初始化FSCK;
+  note right: fsck_init()
+  
+  :打印检查点状态;
+  note right: print_cp_state()
+  
+  :检查写指针;
+  note right: fsck_chk_and_fix_write_pointers()
+  
+  :检查游标段信息;
+  note right: fsck_chk_curseg_info()
+  
+  if (预检模式?) then (是)
+    :检查元数据;
+    if (元数据匹配?) then (否)
+      :强制检查全部;
+    else (是)
+      :检查完成;
+      stop
+    endif
+  endif
+  
+  :检查检查点;
+  note right: fsck_chk_checkpoint()
+  
+  :检查配额节点;
+  note right: fsck_chk_quota_node()
+  
+  :检查孤儿节点;
+  note right: fsck_chk_orphan_node()
+  
+  :扫描整个文件系统;
+  note right: fsck_chk_node_blk()
+  
+  :检查硬链接;
+  note right: fsck_chk_dnode_blk()
+  
+  :验证数据一致性;
+  note right: fsck_verify()
+  
+  if (发现错误且需要修复?) then (是)
+    :修复文件系统;
+    note right: 各种fix函数
+    
+    :写入修复结果;
+    note right: write_checkpoint()
+  endif
+
+case (SLOAD)
+  :执行文件加载;
+  note right: do_sload()
+  
+  :调用f2fs_sload;
+  
+  :稀疏化元数据;
+  note right: f2fs_sparse_initialize_meta()
+  
+  :卸载文件系统;
+  note right: f2fs_do_umount()
+  
+  :重新执行FSCK修复配额;
+  note right: 设置c.func = FSCK
+
+case (DUMP)
+  :执行数据转储;
+  note right: do_dump()
+
+case (DEFRAG)
+  :执行碎片整理;
+  note right: do_defrag()
+
+case (RESIZE)
+  :执行大小调整;
+  note right: do_resize()
+
+case (LABEL)
+  :处理卷标;
+  note right: do_label()
+
+endswitch
+
+:卸载文件系统;
+note right: f2fs_do_umount()
+
+:释放资源;
+note right: f2fs_finalize_device()
+
+stop
+
+@enduml

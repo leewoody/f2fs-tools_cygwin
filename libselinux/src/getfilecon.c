@@ -19,11 +19,11 @@ int getfilecon(const char *path, char ** context)
 		return -1;
 	memset(buf, 0, size);
 
-	ret = getxattr(path, XATTR_NAME_SELINUX, buf, size - 1);
+	ret = getxattr(path, XATTR_NAME_SELINUX, buf, size - 1, 0, 0);
 	if (ret < 0 && errno == ERANGE) {
 		char *newbuf;
 
-		size = getxattr(path, XATTR_NAME_SELINUX, NULL, 0);
+		size = getxattr(path, XATTR_NAME_SELINUX, NULL, 0, 0, 0);
 		if (size < 0)
 			goto out;
 
@@ -34,7 +34,7 @@ int getfilecon(const char *path, char ** context)
 
 		buf = newbuf;
 		memset(buf, 0, size);
-		ret = getxattr(path, XATTR_NAME_SELINUX, buf, size - 1);
+		ret = getxattr(path, XATTR_NAME_SELINUX, buf, size - 1, 0, 0);
 	}
       out:
 	if (ret == 0) {

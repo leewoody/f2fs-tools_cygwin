@@ -10,6 +10,6 @@
 int setfilecon(const char *path, const char *context)
 {
 	return setxattr(path, XATTR_NAME_SELINUX, context, strlen(context) + 1,
-			0);
+			0, 0);
 }
 

@@ -4,7 +4,6 @@ override CXX = clang++
 CXXFLAGS = \
 	-std=c++17 \
 	-stdlib=libc++ \
-	-D__linux__ \
 	-DLIBLOG_LOG_TAG=1006 \
 	-DSNET_EVENT_LOG_TAG=1397638484
 

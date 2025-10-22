@@ -18,12 +18,17 @@ LIBCUTILS_SRC = \
     strlcpy.c \
     fs_config.cpp \
     threads.cpp 
-LIBCUTILS_OBJ = $(patsubst %.cpp,obj/%.o,$(LIBCUTILS_SRC))
+LIBCUTILS_OBJ = $(patsubst %.cpp,obj/%.o,$(filter %.cpp,$(LIBCUTILS_SRC))) $(patsubst %.c,obj/%.o,$(filter %.c,$(LIBCUTILS_SRC)))
 
 obj/%.o: %.cpp
 	@mkdir -p `dirname $@`
 	@echo -e "\033[94m\tCPP\t$@\033[0m"
 	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+obj/%.o: %.c
+	@mkdir -p `dirname $@`
+	@echo -e "\033[94m\tCC\t$@\033[0m"
+	@$(CC) $(INCLUDES) -c $< -o $@
 
 .lib/libcutils.a: $(LIBCUTILS_OBJ)
 	@mkdir -p `dirname $@`

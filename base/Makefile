@@ -1,7 +1,7 @@
 override CC = clang
 override CXX = clang++
 
-CXXFLAGS = -std=c++17 -stdlib=libc++ -Wall -D_FILE_OFFSET_BITS=64 -D__linux__ -D__CYGWIN__ -Wextra -static
+CXXFLAGS = -std=c++17 -stdlib=libc++ -Wall -D_FILE_OFFSET_BITS=64 -Wextra
 
 INCLUDES = -I../liblog/include -I./include
 

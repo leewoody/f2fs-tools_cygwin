@@ -1,0 +1,162 @@
+@startuml sload_f2fs流程图
+!define RECTANGLE class
+title sload_f2fs (文件系统加载器) 流程图
+
+start
+:解析命令行参数;
+note right
+  -f: 源目录路径
+  -s: file_contexts文件
+  -t: 挂载点前缀
+  -T: 时间戳
+  -S: 稀疏模式
+  -C: 文件系统配置
+  -P: 保留所有者权限
+end note
+
+:验证参数有效性;
+if (源目录存在?) then (否)
+  :输出信息并返回;
+  stop
+endif
+
+:设置默认挂载点;
+note right: 如果没有指定，默认为 "/"
+
+:初始化压缩支持;
+note right: init_compr()
+if (初始化失败?) then (是)
+  :返回错误;
+  stop
+endif
+
+:调用f2fs_sload主函数;
+
+:=== f2fs_sload 内部流程 ===;
+
+:初始化FSCK结构;
+note right: fsck_init(sbi)
+
+:配置文件和权限;
+note right: configure_files()
+partition configure_files {
+  if (有SELinux支持?) then (是)
+    :加载SELinux上下文;
+    note right: 读取file_contexts文件
+  endif
+  
+  if (有fs_config配置?) then (是)
+    :初始化文件系统配置;
+    note right: 设置UID/GID/权限
+  endif
+}
+
+:刷新NAT/SIT日志条目;
+note right: flush_journal_entries()
+
+:初始化硬链接缓存;
+note right: sbi->hardlink_cache = 0
+
+:构建目录结构;
+note right: build_directory()
+partition build_directory递归处理 {
+  :扫描源目录;
+  
+  repeat
+    :读取目录项;
+    
+    if (是目录?) then (是)
+      :创建F2FS目录节点;
+      note right: f2fs_mkdir()
+      
+      :递归处理子目录;
+      note right: build_directory()
+      
+    else (是文件)
+      :创建F2FS文件节点;
+      note right: f2fs_create()
+      
+      :写入文件数据;
+      note right: f2fs_write()
+      
+      if (启用压缩?) then (是)
+        :压缩文件内容;
+        note right: compress_file_blocks()
+      endif
+    endif
+    
+    :设置文件属性;
+    partition 设置属性 {
+      :设置UID/GID;
+      :设置权限模式;
+      :设置时间戳;
+      if (有SELinux上下文?) then (是)
+        :设置SELinux扩展属性;
+        note right: setxattr()
+      endif
+    }
+    
+  repeat while (还有更多目录项?)
+}
+
+:为根目录设置SELinux扩展属性;
+note right: set_selinux_xattr()
+if (设置失败?) then (是)
+  :返回错误码;
+  stop
+endif
+
+:更新游标段信息;
+note right: move_curseg_info()
+note left
+  重新计算当前段的位置
+  更新段信息表(SIT)类型
+end note
+
+:清零日志条目;
+note right: zero_journal_entries()
+
+:写入游标段信息;
+note right: write_curseg_info()
+
+:刷新脏的SIT条目;
+note right: flush_sit_entries()
+note left
+  将内存中修改的段信息
+  写入到存储设备
+end note
+
+:写入检查点;
+note right: write_checkpoint()
+note left
+  保存文件系统的一致性状态
+  包含所有元数据的快照
+end note
+
+:返回成功;
+
+:=== 回到主流程 ===;
+
+:稀疏化元数据初始化;
+note right: f2fs_sparse_initialize_meta()
+if (稀疏化失败?) then (是)
+  :返回错误;
+  stop
+endif
+
+:卸载文件系统;
+note right: f2fs_do_umount()
+
+:重新设置为FSCK模式;
+note right
+  c.func = FSCK
+  c.fix_on = 1
+  修复缺失的配额信息
+end note
+
+:跳转到fsck_again标签;
+note right: 自动执行FSCK检查和修复
+
+stop
+
+@enduml

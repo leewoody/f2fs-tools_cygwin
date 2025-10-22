@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <dlfcn.h>
 
-#ifdef DARWIN
+#ifdef __APPLE__
 #include <sys/param.h>
 #include <sys/mount.h>
 #else

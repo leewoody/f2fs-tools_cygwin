@@ -19,11 +19,11 @@ int fgetfilecon(int fd, char ** context)
 		return -1;
 	memset(buf, 0, size);
 
-	ret = fgetxattr(fd, XATTR_NAME_SELINUX, buf, size - 1);
+	ret = fgetxattr(fd, XATTR_NAME_SELINUX, buf, size - 1, 0, 0);
 	if (ret < 0 && errno == ERANGE) {
 		char *newbuf;
 
-		size = fgetxattr(fd, XATTR_NAME_SELINUX, NULL, 0);
+		size = fgetxattr(fd, XATTR_NAME_SELINUX, NULL, 0, 0, 0);
 		if (size < 0)
 			goto out;
 
@@ -34,7 +34,7 @@ int fgetfilecon(int fd, char ** context)
 
 		buf = newbuf;
 		memset(buf, 0, size);
-		ret = fgetxattr(fd, XATTR_NAME_SELINUX, buf, size - 1);
+		ret = fgetxattr(fd, XATTR_NAME_SELINUX, buf, size - 1, 0, 0);
 	}
       out:
 	if (ret == 0) {

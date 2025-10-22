@@ -10,6 +10,6 @@
 int fsetfilecon(int fd, const char *context)
 {
 	return fsetxattr(fd, XATTR_NAME_SELINUX, context, strlen(context) + 1,
-			 0);
+			 0, 0);
 }
 

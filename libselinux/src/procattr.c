@@ -43,6 +43,8 @@ static int openattr(pid_t pid, const char *attr, int flags)
 		free(path);
 		#ifdef __CYGWIN__
 		tid = GetCurrentThreadId();
+		#elif defined(__APPLE__)
+		tid = getpid(); // macOS doesn't have gettid, use pid as fallback
 		#else
 		tid = gettid();
 		#endif

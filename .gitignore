@@ -53,6 +53,5 @@ cscope.*
 ncscope.*
 
 # out files
-/bin
 obj
-.lib
+*.bin
