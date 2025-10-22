@@ -1,0 +1,7 @@
+/
+|-- Gerrit User Guides.pd <ino = 0x6c>, <encrypted (0)>
+|-- face.jpeg <ino = 0x114>, <encrypted (0)>
+|-- subdir <ino = 0x119>, <encrypted (0)>
+|-- test_file.txt <ino = 0x1d2>, <encrypted (0)>
+`-- verification_file.tx <ino = 0x1d3>, <encrypted (0)>
+www
