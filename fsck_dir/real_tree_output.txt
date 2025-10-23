@@ -1,0 +1,83 @@
+[FSCK] Check node 1 / 2121 (0.05%)
+Directory tree read from F2FS image file:
+Successfully read inode 3
+Inode info: mode=0x0, size=0
+Attempting to read directory entries for inode 3 from F2FS image at block 1003 (offset 4108288)...
+Successfully read directory block, checking for valid entries...
+Bitmap is empty, trying next block address...
+Attempting to read directory entries for inode 3 from F2FS image at block 300 (offset 1228800)...
+Successfully read directory block, checking for valid entries...
+Bitmap is empty, trying next block address...
+Attempting to read directory entries for inode 3 from F2FS image at block 600 (offset 2457600)...
+Successfully read directory block, checking for valid entries...
+Bitmap is empty, trying next block address...
+Attempting to read directory entries for inode 3 from F2FS image at block 1027 (offset 4206592)...
+Successfully read directory block, checking for valid entries...
+Found 8 non-zero bytes in bitmap, processing entries...
+=== DEBUG: Checking 214 dentries with depth 1 ===
+=== DEBUG: Bitmap content (first 64 bytes) ===
+85 05 00 00 00 00 00 3f 08 00 00 00 00 00 55 08 
+00 00 00 00 00 85 05 00 00 00 
+=== DEBUG: Checking set bits in bitmap ===
+Bit 0 set
+Bit 2 set
+Bit 7 set
+Bit 8 set
+Bit 10 set
+Bit 56 set
+Bit 57 set
+Bit 58 set
+Bit 59 set
+Bit 60 set
+Bit 61 set
+Bit 67 set
+Bit 112 set
+Bit 114 set
+Bit 116 set
+Bit 118 set
+Bit 123 set
+Bit 168 set
+Bit 170 set
+Bit 175 set
+=== DEBUG: First 5 dentry entries ===
+Dentry 0: ino=0x85700, name_len=0, file_type=0
+Dentry 1: ino=0x0, name_len=2111, file_type=0
+Dentry 2: ino=0x857, name_len=0, file_type=0
+Dentry 3: ino=0x1c000000, name_len=0, file_type=0
+Dentry 4: ino=0x0, name_len=0, file_type=97
+Processing dentry 0: ino=0x85700, name_len=0, file_type=0
+Skipping dentry 0: invalid name length (0)
+Processing dentry 2: ino=0x857, name_len=0, file_type=0
+Skipping dentry 2: invalid name length (0)
+Processing dentry 7: ino=0x2d00, name_len=0, file_type=0
+Skipping dentry 7: invalid name length (0)
+Processing dentry 8: ino=0x0, name_len=92, file_type=0
+Reconstructed name: ''
+|--  <ino = 0x0>, <encrypted (0)>
+Processing dentry 56: ino=0x88f00, name_len=0, file_type=0
+Skipping dentry 56: invalid name length (0)
+Processing dentry 57: ino=0x0, name_len=80, file_type=0
+Reconstructed name: ''
+|--  <ino = 0x0>, <encrypted (0)>
+Processing dentry 67: ino=0x6, name_len=0, file_type=155
+Skipping dentry 67: invalid name length (0)
+Processing dentry 112: ino=0x6000, name_len=0, file_type=0
+Skipping dentry 112: invalid name length (0)
+Processing dentry 114: ino=0x34, name_len=0, file_type=0
+Skipping dentry 114: invalid name length (0)
+Processing dentry 116: ino=0x8, name_len=0, file_type=219
+Skipping dentry 116: invalid name length (0)
+Processing dentry 118: ino=0x0, name_len=53248, file_type=8
+Skipping dentry 118: invalid name length (53248)
+Processing dentry 123: ino=0x8, name_len=0, file_type=219
+Skipping dentry 123: invalid name length (0)
+Processing dentry 168: ino=0x5000, name_len=0, file_type=0
+Skipping dentry 168: invalid name length (0)
+Processing dentry 170: ino=0x34, name_len=0, file_type=0
+Skipping dentry 170: invalid name length (0)
+Processing dentry 175: ino=0x3400, name_len=0, file_type=0
+Skipping dentry 175: invalid name length (0)
+Processing dentry 176: ino=0x0, name_len=52, file_type=0
+Reconstructed name: ''
+`--  <ino = 0x0>, <encrypted (0)>
+Processed 16 valid dentries

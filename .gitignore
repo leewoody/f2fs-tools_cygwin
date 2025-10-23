@@ -55,3 +55,4 @@ ncscope.*
 # out files
 obj
 *.bin
+*.img

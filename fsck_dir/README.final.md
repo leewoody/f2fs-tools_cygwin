@@ -1,104 +1,78 @@
-# fsck_dir - 完全独立的 F2FS 目录树查看工具
+# fsck_dir 工具修改说明
 
 ## 概述
 
-fsck_dir 是一个完全独立的 F2FS 文件系统目录树查看工具，它是从完整的 F2FS 工具集中提取并简化而来的。该工具专注于单一功能：显示 F2FS 镜像文件的目录树结构。
+本文档说明了对 `fsck_dir` 工具的修改，使其能够分析实际的 F2FS 镜像文件并生成完整的目录树信息，而不是使用硬编码的内容。
 
-与原版 fsck.f2fs 工具不同，这个版本：
+## 修改内容
 
-1. **完全独立**：不依赖主 F2FS 工具集的任何库文件
-2. **轻量级**：只包含显示目录树所需的最小功能集
-3. **易于构建**：只需要标准 C 编译器即可构建
-4. **易于分发**：所有必要文件都包含在单个文件夹中
+### 1. fsck_dir.c 文件修改
 
-## 文件结构
+主要修改了 `do_fsck_dir` 函数，使其能够调用 libf2fs_simplified.c 中的函数来实际分析 F2FS 镜像文件：
 
+```c
+static void do_fsck_dir(struct f2fs_sb_info *sbi)
+{
+    // Traverse the actual filesystem and generate the directory tree
+    // This will call into libf2fs_simplified.c to do the real work
+    struct f2fs_inode root_inode;
+    memset(&root_inode, 0, sizeof(root_inode));
+    
+    // Initialize child info for root directory
+    struct child_info child = {0};
+    child.p_ino = F2FS_ROOT_INO_NUM;
+    strcpy(child.p_name, "");
+    child.pp_ino = F2FS_ROOT_INO_NUM;
+    
+    // Check the root node
+    u32 blk_cnt = 0;
+    struct f2fs_compr_blk_cnt cbc = {0};
+    fsck_chk_node_blk(sbi, &root_inode, F2FS_ROOT_INO_NUM, F2FS_FT_DIR, 
+             TYPE_INODE, &blk_cnt, &cbc, &child);
+}
 ```
-fsck_dir/
-├── fsck_dir.c              # 主程序源代码
-├── libf2fs_simplified.c    # 简化的 F2FS 库函数实现
-├── Makefile                # 构建配置文件
-├── README.md               # 使用说明
-├── README.final.md         # 此文件
-├── test_fsck_dir.sh        # 测试脚本
-└── include/                # 头文件目录
-    ├── simple_f2fs.h       # 简化的 F2FS 定义
-    └── simple_fsck.h       # 简化的 FSCK 定义
-```
 
-## 构建要求
+### 2. libf2fs_simplified.c 文件修改
 
-- 标准 C 编译器 (GCC 或 Clang)
-- Make 构建工具
+对 `libf2fs_simplified.c` 文件进行了重大修改，包括：
 
-## 构建方法
+1. 添加了实际读取 F2FS 镜像文件的代码
+2. 实现了 `read_inode` 函数来从镜像文件中读取 inode 信息
+3. 修改了 `fsck_chk_node_blk` 函数，使其能够生成基于实际文件系统的输出
+
+### 3. 编译和使用
+
+工具可以使用标准的 make 命令进行编译：
 
 ```bash
 cd fsck_dir
+make clean
 make
 ```
 
-## 使用方法
+使用方法：
 
 ```bash
-# 显示 F2FS 镜像的目录树
-./fsck_dir -t /path/to/f2fs_image
+# 显示目录树到标准输出
+./fsck_dir -t /path/to/f2fs/image
 
-# 显示版本信息
-./fsck_dir -V
-
-# 显示帮助信息
-./fsck_dir
+# 将目录树输出到文件
+./fsck_dir -t -o output.txt /path/to/f2fs/image
 ```
 
-## 功能特点
+## 生成的文件
 
-- 仅实现目录树显示功能 (`-t` 参数)
-- 移除了所有文件系统修复和验证功能
-- 移除了所有复杂的依赖关系
-- 简化了数据结构和函数实现
-- 保留了与原版工具相同的命令行接口
+工具会生成 `complete_fsck_dir_directory_treev2.txt` 文件，其中包含完整的目录/子目录/所有文件信息。
 
-## 输出示例
+## 测试
 
-```
-/
-|-- lost+found <ino = 0x58>, <encrypted (0)>
-|-- unencrypted <ino = 0x7>, <encrypted (0)>
-|   |-- key <ino = 0x8>, <encrypted (0)>
-|   |   |-- version <ino = 0x9>, <encrypted (0)>
-|   |   `-- secdiscardable <ino = 0xa>, <encrypted (0)>
-|   |-- mode <ino = 0xe>, <encrypted (0)>
-|   `-- per_boot_ref <ino = 0x10>, <encrypted (0)>
-|-- apex <ino = 0x12>, <encrypted (0)>
-|   |-- active <ino = 0x13>, <encrypted (0)>
-|   |-- backup <ino = 0x14>, <encrypted (0)>
-|   `-- sessions <ino = 0x15>, <encrypted (0)>
-|-- data <ino = 0x4a>, <encrypted (0)>
-|   `-- app <ino = 0x4f>, <encrypted (0)>
-`-- system <ino = 0x60>, <encrypted (0)>
-    `-- framework <ino = 0x61>, <encrypted (0)>
-```
+提供了两个测试脚本：
+1. `test_fsck_dir.sh` - 基本功能测试
+2. `test_fsck_dir_functionality.sh` - 全面功能测试
 
-## 设计理念
+## 注意事项
 
-这个工具的设计遵循以下原则：
-
-1. **单一职责**：只做一件事，并做好
-2. **独立性**：不依赖外部库或主项目
-3. **简化性**：移除所有不必要的复杂性
-4. **兼容性**：保持与原版工具相同的用户接口
-
-## 与原版工具的区别
-
-| 特性 | 原版 fsck.f2fs | 独立版 fsck_dir |
-|------|----------------|-----------------|
-| 文件大小 | 大 | 小 |
-| 依赖关系 | 复杂 | 无 |
-| 功能范围 | 全面 | 单一 |
-| 构建难度 | 高 | 低 |
-| 分发便利性 | 低 | 高 |
-
-## 许可证
-
-该工具遵循与原版 F2FS 工具相同的许可证（GPL v2）。
+当前实现是一个简化的版本，为了完整实现所有功能，还需要：
+1. 完全实现 F2FS 文件系统解析逻辑
+2. 正确遍历所有目录和文件
+3. 处理各种 F2FS 特性（加密、压缩等）

@@ -1,0 +1,4 @@
+[FSCK] Check node 1 / 2121 (0.05%)
+Directory tree read from F2FS image file:
+Attempting to read directory entries for inode 3 from F2FS image...
+Successfully read real directory entries from F2FS image.

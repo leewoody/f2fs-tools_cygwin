@@ -1,12 +1,3 @@
-/**
- * fsck_dir.c
- *
- * A simplified version of fsck.f2fs that only shows directory tree with -t option
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- */
 #include "include/simple_fsck.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,20 +22,22 @@ void fsck_usage()
 
 static void do_fsck_dir(struct f2fs_sb_info *sbi)
 {
-	// Instead of traversing the actual filesystem, we'll output the complete directory tree
-	// Open the complete directory tree file and print its contents
-	FILE *complete_file = fopen("../complete_directory_tree.txt", "r");
-	if (!complete_file) {
-		printf("Error: Cannot open complete_directory_tree.txt\n");
-		return;
-	}
+	// Traverse the actual filesystem and generate the directory tree
+	// This will call into libf2fs_simplified.c to do the real work
+	struct f2fs_inode root_inode;
+	memset(&root_inode, 0, sizeof(root_inode));
 	
-	char buffer[1024];
-	while (fgets(buffer, sizeof(buffer), complete_file)) {
-		printf("%s", buffer);
-	}
+	// Initialize child info for root directory
+	struct child_info child = {0};
+	child.p_ino = F2FS_ROOT_INO_NUM;
+	strcpy(child.p_name, "");
+	child.pp_ino = F2FS_ROOT_INO_NUM;
 	
-	fclose(complete_file);
+	// Check the root node
+	u32 blk_cnt = 0;
+	struct f2fs_compr_blk_cnt cbc = {0};
+	fsck_chk_node_blk(sbi, &root_inode, F2FS_ROOT_INO_NUM, F2FS_FT_DIR, 
+			 TYPE_INODE, &blk_cnt, &cbc, &child);
 }
 
 int main(int argc, char *argv[])
@@ -149,7 +142,13 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	// Initialize fsck
+	fsck_init(sbi);
+
 	do_fsck_dir(sbi);
+
+	// Cleanup fsck
+	fsck_free(sbi);
 
 	f2fs_free_sbi(sbi);
 	free(tree_mark);

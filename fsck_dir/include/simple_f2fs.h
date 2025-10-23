@@ -19,12 +19,68 @@ typedef uint16_t	u16;
 typedef uint8_t		u8;
 typedef u32		nid_t;
 
+// Little endian types
+typedef u16 __le16;
+typedef u32 __le32;
+typedef u64 __le64;
+
 #ifndef bool
 typedef u8		bool;
 #endif
 
 // Forward declarations
 struct f2fs_device_info;
+
+// Byte order conversion functions (simplified from f2fs_fs.h)
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define le16_to_cpu(x)  ((uint16_t)(x))
+#define le32_to_cpu(x)  ((uint32_t)(x))
+#define le64_to_cpu(x)  ((uint64_t)(x))
+#define cpu_to_le16(x)  ((uint16_t)(x))
+#define cpu_to_le32(x)  ((uint32_t)(x))
+#define cpu_to_le64(x)  ((uint64_t)(x))
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+static inline uint16_t bswap_16(uint16_t val)
+{
+	return ((val & (uint16_t)0x00ffU) << 8)
+		| ((val & (uint16_t)0xff00U) >> 8);
+}
+
+static inline uint32_t bswap_32(uint32_t val)
+{
+	return ((val & (uint32_t)0x000000ffUL) << 24)
+		| ((val & (uint32_t)0x0000ff00UL) <<  8)
+		| ((val & (uint32_t)0x00ff0000UL) >>  8)
+		| ((val & (uint32_t)0xff000000UL) >> 24);
+}
+
+static inline uint64_t bswap_64(uint64_t val)
+{
+	return ((val & (uint64_t)0x00000000000000ffULL) << 56)
+		| ((val & (uint64_t)0x000000000000ff00ULL) << 40)
+		| ((val & (uint64_t)0x0000000000ff0000ULL) << 24)
+		| ((val & (uint64_t)0x00000000ff000000ULL) <<  8)
+		| ((val & (uint64_t)0x000000ff00000000ULL) >>  8)
+		| ((val & (uint64_t)0x0000ff0000000000ULL) >> 24)
+		| ((val & (uint64_t)0x00ff000000000000ULL) >> 40)
+		| ((val & (uint64_t)0xff00000000000000ULL) >> 56);
+}
+
+#define le16_to_cpu(x)  bswap_16(x)
+#define le32_to_cpu(x)  bswap_32(x)
+#define le64_to_cpu(x)  bswap_64(x)
+#define cpu_to_le16(x)  bswap_16(x)
+#define cpu_to_le32(x)  bswap_32(x)
+#define cpu_to_le64(x)  bswap_64(x)
+#else
+// Fallback for unknown byte order
+#define le16_to_cpu(x)  ((uint16_t)(x))
+#define le32_to_cpu(x)  ((uint32_t)(x))
+#define le64_to_cpu(x)  ((uint64_t)(x))
+#define cpu_to_le16(x)  ((uint16_t)(x))
+#define cpu_to_le32(x)  ((uint32_t)(x))
+#define cpu_to_le64(x)  ((uint64_t)(x))
+#endif
 
 // Constants
 #define F2FS_NAME_LEN			255
